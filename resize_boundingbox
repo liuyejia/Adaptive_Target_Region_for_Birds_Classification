@@ -1,0 +1,69 @@
+import numpy as np
+import cv2
+import os
+
+txt_file='/home/luwei/Downloads/CUB_200_2011/images.txt'
+boundingbox_file='/home/luwei/Downloads/CUB_200_2011/bounding_boxes.txt'
+#store image path to path_list
+path_list=[]
+with open(txt_file) as f:
+	for line in f:
+		print line
+		word=line.split()
+		print word
+		list=word[-1].split("/")
+		print list
+
+		path_list.append(list[-1])
+
+bounding_info=[]
+with open(boundingbox_file) as f:
+	for line in f:
+
+		bounding_info.append(line)
+
+
+
+new_img_path=r'/home/luwei/Downloads/CUB_200_2011/new_images'
+
+text_file = open("new_boundingbox.txt", "w")
+if not os.path.exists(new_img_path):
+	os.makedirs(new_img_path)
+img_dir='/home/luwei/Downloads/CUB_200_2011/images'
+#resize images and store to img_dir
+n=0
+count = 0
+for img_name in path_list:
+	for subdir,dirs,files in os.walk(img_dir):
+		for file in files:
+			if file.endswith(img_name):
+  				#print file
+				#src=os.path.join(img_dir,file)
+				#if file is not None:
+				#file=file.lower()
+				#os.rename(os.path.join(img_dir,file),os.path.join(img_dir,file).lower())
+				bd_size=bounding_info[n].split()
+
+				single_img_path=os.path.join(subdir,file)
+				img=cv2.imread(single_img_path)
+				print single_img_path
+#				print img
+
+				#a=float(bd_size[1])
+				x_bd = int(float(bd_size[1]) * 200 /img.shape[1])
+				y_bd = int(float(bd_size[2]) * 200 /img.shape[0])
+				xx_bd = int(float(bd_size[3]) * 200 / img.shape[1])
+				yy_bd = int(float(bd_size[4]) * 200 / img.shape[0])
+				res=cv2.resize(img,(200,200),interpolation=cv2.INTER_CUBIC)
+#                                print res
+				#new_img=cv2.resize(file,(200,200))
+#	                        os.path.join(new_img_path,res.split('/')[-1])
+				cv2.imwrite(new_img_path+'/'+file,res)
+				n += 1
+				text_file.write("%d   %.1f %.1f %.1f %.1f\n" % (n,x_bd,y_bd,xx_bd,yy_bd))
+				count += 1
+				if count > 50:
+					exit(0)
+
+
+text_file.close()
